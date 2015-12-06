@@ -201,7 +201,7 @@ public class Game
 		//The below code isnt very flexible or well designed... could be redone - KL
 		//Not sure if it would be worth redoing though, as it does what is needed - KL
 		String evaluator = "uk.ac.gla.chessmantis.Mantis";
-		String analyser = "AlphaBetaAnalyserTT";
+		String analyser = "AlphaBetaAnalyser";
 		if (args.length > 1) //need atleast two arguments to make sense
 		{
 			for (int i = 0; i < args.length; i++)
