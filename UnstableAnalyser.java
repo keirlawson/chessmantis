@@ -1,0 +1,2 @@
+interface UnstableAnalyser extends Analyser{
+}
