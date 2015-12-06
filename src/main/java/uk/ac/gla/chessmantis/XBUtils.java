@@ -2,7 +2,7 @@ package uk.ac.gla.chessmantis;
 
 import uk.ac.gla.chessmantis.piece.*;
 
-class XBUtils
+public class XBUtils
 {
 	/*The below conversion functions do not take into account castling or promotions*/
 	private static int getNumber(char letter)
@@ -14,53 +14,49 @@ class XBUtils
 	{
 		return (char) ('a' + number);
 	}
-	
-	/*
-	 * AM - Fri Dec 7.
-	 * The move was being returned, with a1 = 1, a2 = 2, b1=9
-	 * Changed to a1=0, a2=8, b1=1
-	 * 
-	 */
+
+	private static boolean isLegalMove(final char[] moveArray) {
+		boolean firstLegal = moveArray[0] >= 'a' && moveArray[0] <= 'h';
+		boolean secondLegal = moveArray[1] >= '1' && moveArray[1] <= '8';
+		boolean thirdLegal = moveArray[2] >= 'a' && moveArray[2] <= 'h';
+		boolean fourthLegal = moveArray[3] >= '1' && moveArray[3] <= '8';
+
+		return firstLegal && secondLegal && thirdLegal && fourthLegal;
+	}
+
 	/** Static method to convert a string representation of a uk.ac.gla.chessmantis.Move into an
 	actual move object. */
-	static Moveable stringToMove(String st)
+	public static Moveable stringToMove(final String st)
 	{
 		char[] s = st.toCharArray();
-		boolean firstlegal = s[0] >= 'a' && s[0] <= 'h';
-		boolean secondlegal = s[1] >= '1' && s[1] <= '8';
-		boolean thirdlegal = s[2] >= 'a' && s[2] <= 'h';
-		boolean fourthlegal = s[3] >= '1' && s[3] <= '8';
-		if (firstlegal && secondlegal && thirdlegal && fourthlegal)
-		{
-			// a5a6: s[0]='a', s[1]=5, s[2]=a, s[3]=6
-			int from = getNumber(s[0]) + ((Integer.parseInt("" + s[1]) - 1) * 8);
-			int to = getNumber(s[2]) + ((Integer.parseInt("" + s[3]) - 1) * 8);
-			Moveable m = new Move(from, to);
-			if (s.length > 4) {//If it looks like a promotion
-				switch(s[4]) {
-					case 'q':
-						m.setPromotionFigure(new Queen());
-						break;
-					case 'r':
-						m.setPromotionFigure(new Rook());
-						break;
-					case 'n':
-						m.setPromotionFigure(new Knight());
-						break;
-					case 'b':
-						m.setPromotionFigure(new Bishop());
-						break;
-					default:
-						break;
-				}
-			}
-			return m;
-		}
-		else
-		{
+
+		if (!isLegalMove(s)) {
 			//FIXME Should throw an IlegalMoveException here, havent coded it yet though
 			return null;
 		}
+
+		int from = getNumber(s[0]) + ((Integer.parseInt("" + s[1]) - 1) * 8);
+		int to = getNumber(s[2]) + ((Integer.parseInt("" + s[3]) - 1) * 8);
+		Moveable m = new Move(from, to);
+		if (s.length > 4) {//If it looks like a promotion
+			switch(s[4]) {
+				case 'q':
+					m.setPromotionFigure(new Queen());
+					break;
+				case 'r':
+					m.setPromotionFigure(new Rook());
+					break;
+				case 'n':
+					m.setPromotionFigure(new Knight());
+					break;
+				case 'b':
+					m.setPromotionFigure(new Bishop());
+					break;
+				default:
+					break;
+			}
+		}
+		return m;
 	}
 	
 	/** Static method to convert a uk.ac.gla.chessmantis.Move object back into its Chess String
