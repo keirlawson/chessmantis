@@ -1,2 +1,0 @@
-interface StableAnalyser extends Analyser{
-}
