@@ -37,15 +37,15 @@ public class Game
 	 * Constructor
 	 * 
 	 */
-	public Game(String evaluatorstring, String analyserstring)
+	public Game(String evaluatorString, String analyserString)
 	{
-		x = new XBoardIO();
+		x = new XBoardIO(System.in, System.out);
 		//dont really understand why we need the below two lines...
 		//a = new uk.ac.gla.chessmantis.analyser.AlphaBetaAnalyser();
 		//b = new uk.ac.gla.chessmantis.evaluator.Capuchin();
 		Class c;
 		try {
-			c = Class.forName(evaluatorstring);
+			c = Class.forName(evaluatorString);
 			b = (Evaluator) c.newInstance();
 		} catch (Exception e) {
 			//That evaluator didn't work... default to marmoset
@@ -53,7 +53,7 @@ public class Game
 			b = new Mantis();
 		}
 		try {
-			c = Class.forName(analyserstring);
+			c = Class.forName(analyserString);
 			a = (Analyser) c.newInstance();
 		} catch (Exception e) {
 			//That analyser didn't work... default to minimax
@@ -77,7 +77,7 @@ public class Game
 		if (b.makeMove(me.getMove()))
 		{
 			
-			System.err.println("uk.ac.gla.chessmantis.Game.java: uk.ac.gla.chessmantis.Move event received");
+			System.err.println("Game.java: Move event received");
 			// Legal
 			// 	Check the state of the new board - isCheckmate, isStalemate etc
 			if(b.isCheckmate())
@@ -111,7 +111,7 @@ public class Game
 		else
 		{
 			// Illegal move
-			System.err.println("uk.ac.gla.chessmantis.Game.java: The move was illegal");
+			System.err.println("Game.java: The move was illegal");
 			x.write(new IllegalMoveEvent(me.getMove()));
 		}
 		

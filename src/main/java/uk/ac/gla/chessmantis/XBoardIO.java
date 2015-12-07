@@ -36,16 +36,7 @@ public class XBoardIO implements Readable, Writeable, Runnable
 		form = new Formatter(out);
 		scan.useDelimiter("\n");
 	}
-	
-	public XBoardIO()
-	{
-		// This line doesn't work, oh dear.
-		//this(System.in, System.out);
-		scan = new Scanner(System.in);
-		form = new Formatter(System.out);
-		scan.useDelimiter("\n");
-	}
-	
+
 	/** Writes a uk.ac.gla.chessmantis.event.MoveEvent to the XBoard interface. */
 	public void write(MoveEvent event)
 	{
