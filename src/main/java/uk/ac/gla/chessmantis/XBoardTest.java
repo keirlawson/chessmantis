@@ -6,7 +6,7 @@ class XBoardTest
 {
 	public static void main(String[] args)
 	{
-		XBoardIO x = new XBoardIO();
+		XBoardIO x = new XBoardIO(System.in, System.out);
 		DebugWriter w = new DebugWriter("uk.ac.gla.chessmantis.DebugWriter");
 		for(;;)
 		{

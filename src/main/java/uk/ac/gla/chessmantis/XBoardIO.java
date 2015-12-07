@@ -30,7 +30,7 @@ public class XBoardIO implements Readable, Writeable, Runnable
 	 */
 	 
 	
-	public XBoardIO(InputStream in, OutputStream out)
+	public XBoardIO(InputStream in, PrintStream out)
 	{
 		scan = new Scanner(in);
 		form = new Formatter(out);
