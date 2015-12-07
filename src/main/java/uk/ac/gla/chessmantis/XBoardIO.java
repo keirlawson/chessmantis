@@ -124,33 +124,6 @@ public class XBoardIO implements Readable, Writeable, Runnable
  	 */
 	private ChessEvent parseCommand(String commandline)
 	{
-		/* NH - Commands being ignored right now are as follows;
-		 * variant
-		 * random
-		 * force
-		 * go
-		 * playother
-		 * white
-		 * black
-		 * level
-		 * st
-		 * sd
-		 * time
-		 * otim
-		 * result
-		 * setboard
-		 * edit
-		 * hint
-		 * bk
-		 * undo
-		 * remove
-		 * post/nopost
-		 * name
-		 * rating
-		 * ics
-		 * computer
-		 * pause/resume
-		 */
 		
 		StringTokenizer commandtokenizer = new StringTokenizer(commandline);
 		
