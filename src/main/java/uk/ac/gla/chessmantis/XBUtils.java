@@ -2,7 +2,7 @@ package uk.ac.gla.chessmantis;
 
 import uk.ac.gla.chessmantis.piece.*;
 
-public class XBUtils
+class XBUtils
 {
 	/*The below conversion functions do not take into account castling or promotions*/
 	private static int getNumber(char letter)
