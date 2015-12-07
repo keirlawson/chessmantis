@@ -14,7 +14,7 @@ import java.util.*;
  * @version 1.0
  */
 
-public class MiniMaxAnalyser implements StableAnalyser
+public class MiniMaxAnalyser implements Analyser
 {
 	private int cutoffdepth;
 

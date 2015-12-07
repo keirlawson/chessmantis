@@ -14,7 +14,7 @@ import java.util.*;
  * @version 1.0
  */
 
-public class AlphaBetaAnalyser implements StableAnalyser
+public class AlphaBetaAnalyser implements Analyser
 {
 	private int cutoffdepth;
 
