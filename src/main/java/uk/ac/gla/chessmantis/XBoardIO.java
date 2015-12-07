@@ -5,6 +5,7 @@ import uk.ac.gla.chessmantis.event.*;
 import java.lang.*;
 import java.util.*;
 import java.io.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  * @author Keir Lawson and Neil Henning
@@ -21,7 +22,7 @@ public class XBoardIO implements Readable, Writeable, Runnable
 	final boolean[] usefeatures = {false,false,true,true,false,false,false,true,false,false,false};
 	final String[] ignorablecommands = {"accepted","xboard","computer","variant","random"};	
 
-	Deque<ChessEvent> eventqueue = new LinkedList<ChessEvent>();
+	Deque<ChessEvent> eventqueue = new ConcurrentLinkedDeque<ChessEvent>();
 
 	/* NH - Commands being ignored right now are as follows;
 	 * resign
@@ -86,13 +87,9 @@ public class XBoardIO implements Readable, Writeable, Runnable
 	}
 
 	public void run() {
-		for (;;) {
-			try {
-				Thread.sleep(20);
-			} catch (InterruptedException e) {;}
-			//Need to think about concurrency here... should really lock
+		while (true) {
 			ChessEvent c = parseCommand(scan.next());
-			synchronized(eventqueue) {
+			if(c != null) {
 				eventqueue.add(c);
 			}
 		}
@@ -101,9 +98,7 @@ public class XBoardIO implements Readable, Writeable, Runnable
 	/** Returns the next uk.ac.gla.chessmantis.event.ChessEvent, or null if no event found. */
 	public ChessEvent getNextEvent()
 	{
-		synchronized(eventqueue) {
-			return eventqueue.pollLast();
-		}
+		return eventqueue.pollLast();
 	}
 
 	/**
