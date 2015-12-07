@@ -16,7 +16,7 @@ public class XBoardIO implements Readable, Writeable, Runnable
 	private Formatter form;
 
 	//Should probably read these from somewhere...
-	final String enginename = "Chess uk.ac.gla.chessmantis.Mantis";
+	final String enginename = "Chess Mantis";
 	final String[] featurenames = {"name","ics","usermove","ping","analyze","colors","pause","setboard","time","sigterm","sigint"};//,"time"};
 	final boolean[] usefeatures = {false,false,true,true,false,false,false,true,false,false,false};
 	final String[] ignorablecommands = {"accepted","xboard","computer","variant","random"};	
