@@ -17,9 +17,9 @@ import java.util.Date;
  */
 public class Game
 {
-	XBoardIO xBoardIO;
-	Evaluator evaluator;
-	Analyser analyser;
+	private XBoardIO xBoardIO;
+	private Evaluator evaluator;
+	private Analyser analyser;
 
 	private long starttime = 0;
 	private long timeleft = 0; //Time left (miliseconds) in which to make movesleft, default to 5 minutes
