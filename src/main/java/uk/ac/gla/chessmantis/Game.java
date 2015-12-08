@@ -30,8 +30,8 @@ public class Game
 	private boolean think = true;
 	private int maxdepth = 0;//The maximum depth of game tree that we will analyse to, 0 == infinite
 	
-	private TimeControl t;
-	private Thread t1;
+	private TimeControl timeControl;
+	private Thread thread;
 	
 	/**
 	 * Constructor
@@ -101,10 +101,10 @@ public class Game
 					starttime = (new Date()).getTime();
 					System.err.println("Executing new time control thread");
 					//Dont know why this works... but it does (seems to be a problem with the reference) - KL
-					t.setEvaluator(b);
-					t.settimeformove(timeleft/movesleft);
-					t1 = new Thread(t);
-					t1.start();
+					timeControl.setEvaluator(b);
+					timeControl.settimeformove(timeleft/movesleft);
+					thread = new Thread(timeControl);
+					thread.start();
 				}
 			}
 		}
@@ -163,10 +163,10 @@ public class Game
 				starttime = (new Date()).getTime();
 				System.err.println("Executing new time control thread");
 				//Dont know why this works... but it does (seems to be a problem with the reference) - KL
-				t.setEvaluator(b);
-				t.settimeformove(timeleft/movesleft);
-				t1 = new Thread(t);
-				t1.start();
+				timeControl.setEvaluator(b);
+				timeControl.settimeformove(timeleft/movesleft);
+				thread = new Thread(timeControl);
+				thread.start();
 				break;
 			default:
 				break;
@@ -190,7 +190,7 @@ public class Game
 
 	private void ProcessEvent(DepthEvent de)
 	{
-		t.setMaxDepth(de.getDepth());
+		timeControl.setMaxDepth(de.getDepth());
 	}
 
 	/**
@@ -225,8 +225,8 @@ public class Game
 		
 		Thread thread = new Thread(g.x);	
 		thread.start();
-		g.t = new TimeControl(g.b,g.a);
-		g.t1 = new Thread(g.t);
+		g.timeControl = new TimeControl(g.b,g.a);
+		g.thread = new Thread(g.timeControl);
 
 		for(;;)
 		{
@@ -234,8 +234,8 @@ public class Game
 				// Avoids thrashing
 				Thread.sleep(25);
 			} catch (InterruptedException e) {;}
-			if (g.t.isDone()){
-				m = g.t.getResult();
+			if (g.timeControl.isDone()){
+				m = g.timeControl.getResult();
 				if(m != null)
 				{
 					g.x.write(new MoveEvent(m));
@@ -243,7 +243,7 @@ public class Game
 					g.timeleft = (g.timeleft - difference) + g.timeinc;
 					System.err.printf("that move took roughly %d seconds, we now have roughly %d seconds left\n",difference/1000,g.timeleft/1000);
 					g.b.makeMove(m);
-					g.t.reset();
+					g.timeControl.reset();
 					if (--g.movesleft == 0) {
 						g.movesleft = g.basemoves;
 						g.timeleft = g.basetime;
@@ -252,7 +252,7 @@ public class Game
 				else
 				{
 					g.x.write(new StatusEvent(Status.Win));
-					g.t.reset();
+					g.timeControl.reset();
 				}
 			}
 			ChessEvent c = g.x.getNextEvent();
