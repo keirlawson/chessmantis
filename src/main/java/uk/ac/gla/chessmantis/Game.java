@@ -98,23 +98,23 @@ public class Game
 				// Should be some way to Dynamic Dispatch cast and get rid of the if
 				if(event instanceof MoveEvent)
 				{
-					ProcessEvent((MoveEvent)event);
+					processEvent((MoveEvent)event);
 				}
 				else if(event instanceof StatusEvent)
 				{
-					ProcessEvent((StatusEvent)event);
+					processEvent((StatusEvent)event);
 				}
 				else if (event instanceof TimeEvent)
 				{
-					ProcessEvent((TimeEvent)event);
+					processEvent((TimeEvent)event);
 				}
 				else if (event instanceof MessageEvent)
 				{
-					ProcessEvent((MessageEvent)event);
+					processEvent((MessageEvent)event);
 				}
 				else if (event instanceof DepthEvent)
 				{
-					ProcessEvent((DepthEvent)event);
+					processEvent((DepthEvent)event);
 				}
 				else if(event instanceof ErrorEvent)
 				{
@@ -139,7 +139,7 @@ public class Game
 		System.exit(0);
 	}
 	
-	private void ProcessEvent(MoveEvent me)
+	private void processEvent(MoveEvent me)
 	{
 		// Give move to uk.ac.gla.chessmantis.Board Class
 		if (evaluator.makeMove(me.getMove()))
@@ -188,7 +188,7 @@ public class Game
 		// Deal with move as above
 	}
 	
-	private void ProcessEvent(StatusEvent se)
+	private void processEvent(StatusEvent se)
 	{
 		switch (se.getStatus())
 		{
@@ -242,20 +242,20 @@ public class Game
 		xBoardIO.write(se);
 	}
 	
-	private void ProcessEvent(TimeEvent te)
+	private void processEvent(TimeEvent te)
 	{
 		basetime = timeleft = te.getBase();
 		basemoves = movesleft = te.getMoves();
 		timeinc = te.getIncrement();
 	}
 	
-	private void ProcessEvent(MessageEvent me)
+	private void processEvent(MessageEvent me)
 	{
 		// setboard has been called from xboard
 		evaluator.setBoard(me.getMessage());
 	}
 
-	private void ProcessEvent(DepthEvent de)
+	private void processEvent(DepthEvent de)
 	{
 		timeControl.setMaxDepth(de.getDepth());
 	}
