@@ -40,26 +40,26 @@ public class Game
 	public Game(String evaluatorString, String analyserString)
 	{
 		x = new XBoardIO(System.in, System.out);
-		//dont really understand why we need the below two lines...
-		//a = new uk.ac.gla.chessmantis.analyser.AlphaBetaAnalyser();
-		//b = new uk.ac.gla.chessmantis.evaluator.Capuchin();
-		Class c;
 		try {
-			c = Class.forName(evaluatorString);
-			b = (Evaluator) c.newInstance();
+			b = loadInstance(evaluatorString);
 		} catch (Exception e) {
 			//That evaluator didn't work... default to marmoset
 			//FIXME should report an error here... somehow
 			b = new Mantis();
 		}
 		try {
-			c = Class.forName(analyserString);
-			a = (Analyser) c.newInstance();
+			a = loadInstance(analyserString);
 		} catch (Exception e) {
 			//That analyser didn't work... default to minimax
 			//FIXME should report an error here... somehow
 			a = new MiniMaxAnalyser();
 		}
+	}
+
+	private <T>  T loadInstance(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+		Class clazz = Class.forName(className);
+		T instance = (T) clazz.newInstance();
+		return instance;
 	}
 	
 	/**
