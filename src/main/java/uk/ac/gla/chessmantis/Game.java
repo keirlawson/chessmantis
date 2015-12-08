@@ -17,9 +17,9 @@ import java.util.Date;
  */
 public class Game
 {
-	XBoardIO x;
-	Evaluator b;
-	Analyser a;
+	XBoardIO xBoardIO;
+	Evaluator evaluator;
+	Analyser analyser;
 
 	private long starttime = 0;
 	private long timeleft = 0; //Time left (miliseconds) in which to make movesleft, default to 5 minutes
@@ -39,20 +39,20 @@ public class Game
 	 */
 	public Game(String evaluatorString, String analyserString)
 	{
-		x = new XBoardIO(System.in, System.out);
+		xBoardIO = new XBoardIO(System.in, System.out);
 		try {
-			b = loadInstance(evaluatorString);
+			evaluator = loadInstance(evaluatorString);
 		} catch (Exception e) {
 			//That evaluator didn't work... default to marmoset
 			//FIXME should report an error here... somehow
-			b = new Mantis();
+			evaluator = new Mantis();
 		}
 		try {
-			a = loadInstance(analyserString);
+			analyser = loadInstance(analyserString);
 		} catch (Exception e) {
 			//That analyser didn't work... default to minimax
 			//FIXME should report an error here... somehow
-			a = new MiniMaxAnalyser();
+			analyser = new MiniMaxAnalyser();
 		}
 	}
 
@@ -74,23 +74,23 @@ public class Game
 	private void ProcessEvent(MoveEvent me)
 	{
 		// Give move to uk.ac.gla.chessmantis.Board Class
-		if (b.makeMove(me.getMove()))
+		if (evaluator.makeMove(me.getMove()))
 		{
 			
 			System.err.println("Game.java: Move event received");
 			// Legal
 			// 	Check the state of the new board - isCheckmate, isStalemate etc
-			if(b.isCheckmate())
+			if(evaluator.isCheckmate())
 			{
 				
 				// Create a status event - Win
-				x.write(new StatusEvent(Status.Win));
+				xBoardIO.write(new StatusEvent(Status.Win));
 			}
-			/* else if (g.b.isStalemate())
+			/* else if (g.evaluator.isStalemate())
 			{
 				System.err.println("uk.ac.gla.chessmantis.Game.java: Thinks stalemate has occured");
 				// Create a status event - Draw
-				g.x.write(new uk.ac.gla.chessmantis.event.StatusEvent(uk.ac.gla.chessmantis.Status.Draw));
+				g.xBoardIO.write(new uk.ac.gla.chessmantis.event.StatusEvent(uk.ac.gla.chessmantis.Status.Draw));
 			} */
 			else
 			{
@@ -101,7 +101,7 @@ public class Game
 					starttime = (new Date()).getTime();
 					System.err.println("Executing new time control thread");
 					//Dont know why this works... but it does (seems to be a problem with the reference) - KL
-					timeControl.setEvaluator(b);
+					timeControl.setEvaluator(evaluator);
 					timeControl.settimeformove(timeleft/movesleft);
 					thread = new Thread(timeControl);
 					thread.start();
@@ -112,11 +112,11 @@ public class Game
 		{
 			// Illegal move
 			System.err.println("Game.java: The move was illegal");
-			x.write(new IllegalMoveEvent(me.getMove()));
+			xBoardIO.write(new IllegalMoveEvent(me.getMove()));
 		}
 		
 		// Computer move
-		// g.a.getNextMove
+		// g.analyser.getNextMove
 		// Deal with move as above
 	}
 	
@@ -138,7 +138,7 @@ public class Game
 				break;
 			case New:
 				try {
-					b = (Evaluator) b.getClass().newInstance();
+					evaluator = (Evaluator) evaluator.getClass().newInstance();
 				} catch (Exception e) {
 					//This should never really happen... unless say the class file was deleted during play
 				}
@@ -163,7 +163,7 @@ public class Game
 				starttime = (new Date()).getTime();
 				System.err.println("Executing new time control thread");
 				//Dont know why this works... but it does (seems to be a problem with the reference) - KL
-				timeControl.setEvaluator(b);
+				timeControl.setEvaluator(evaluator);
 				timeControl.settimeformove(timeleft/movesleft);
 				thread = new Thread(timeControl);
 				thread.start();
@@ -171,7 +171,7 @@ public class Game
 			default:
 				break;
 		}
-		x.write(se);
+		xBoardIO.write(se);
 	}
 	
 	private void ProcessEvent(TimeEvent te)
@@ -179,13 +179,12 @@ public class Game
 		basetime = timeleft = te.getBase();
 		basemoves = movesleft = te.getMoves();
 		timeinc = te.getIncrement();
-		System.err.printf("");
 	}
 	
 	private void ProcessEvent(MessageEvent me)
 	{
 		// setboard has been called from xboard
-		b.setBoard(me.getMessage());
+		evaluator.setBoard(me.getMessage());
 	}
 
 	private void ProcessEvent(DepthEvent de)
@@ -198,10 +197,8 @@ public class Game
 	 */
 	public static void main(String[] args)
 	{
-		//The below code isnt very flexible or well designed... could be redone - KL
-		//Not sure if it would be worth redoing though, as it does what is needed - KL
-		String evaluator = "uk.ac.gla.chessmantis.Mantis";
-		String analyser = "AlphaBetaAnalyser";
+		String evaluatorName = "uk.ac.gla.chessmantis.Mantis";
+		String analyserName = "AlphaBetaAnalyser";
 		if (args.length > 1) //need atleast two arguments to make sense
 		{
 			for (int i = 0; i < args.length; i++)
@@ -211,21 +208,21 @@ public class Game
 					char flag = args[i].charAt(1);
 					if (flag == 'e') //If the evaluator is specified
 					{
-						evaluator = args[++i];
+						evaluatorName = args[++i];
 					}
 					else if (flag == 'a') //If the analyser is specified
 					{
-						analyser = args[++i];
+						analyserName = args[++i];
 					}
 				}
 			}
 		}
-		Game g = new Game(evaluator, analyser);
+		Game g = new Game(evaluatorName, analyserName);
 		Moveable m;
 		
-		Thread thread = new Thread(g.x);	
+		Thread thread = new Thread(g.xBoardIO);
 		thread.start();
-		g.timeControl = new TimeControl(g.b,g.a);
+		g.timeControl = new TimeControl(g.evaluator,g.analyser);
 		g.thread = new Thread(g.timeControl);
 
 		for(;;)
@@ -238,11 +235,11 @@ public class Game
 				m = g.timeControl.getResult();
 				if(m != null)
 				{
-					g.x.write(new MoveEvent(m));
+					g.xBoardIO.write(new MoveEvent(m));
 					long difference = (new Date()).getTime() - g.starttime;
 					g.timeleft = (g.timeleft - difference) + g.timeinc;
 					System.err.printf("that move took roughly %d seconds, we now have roughly %d seconds left\n",difference/1000,g.timeleft/1000);
-					g.b.makeMove(m);
+					g.evaluator.makeMove(m);
 					g.timeControl.reset();
 					if (--g.movesleft == 0) {
 						g.movesleft = g.basemoves;
@@ -251,11 +248,11 @@ public class Game
 				}
 				else
 				{
-					g.x.write(new StatusEvent(Status.Win));
+					g.xBoardIO.write(new StatusEvent(Status.Win));
 					g.timeControl.reset();
 				}
 			}
-			ChessEvent c = g.x.getNextEvent();
+			ChessEvent c = g.xBoardIO.getNextEvent();
 			if (c != null)
 			{
 				// Should be some way to Dynamic Dispatch cast and get rid of the if
@@ -281,7 +278,7 @@ public class Game
 				}
 				else if(c instanceof ErrorEvent)
 				{
-					g.x.write((ErrorEvent) c);
+					g.xBoardIO.write((ErrorEvent) c);
 				}
 			}
 		}
