@@ -181,7 +181,7 @@ public class MiniMaxAnalyser implements Analyser
 	public static void main(String[] args)
 	{
 		Evaluator omega = new Capuchin();
-		Analyser epsilon = new MiniMaxAnalyser();
+		MiniMaxAnalyser epsilon = new MiniMaxAnalyser();
 		Writeable writer = new DebugWriter("uk.ac.gla.chessmantis.evaluator.Marmoset!");
 		
 		for(int i = 0; i < 2; i++)

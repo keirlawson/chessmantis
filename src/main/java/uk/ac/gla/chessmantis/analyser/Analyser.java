@@ -5,8 +5,6 @@ import uk.ac.gla.chessmantis.evaluator.Evaluator;
 
 public interface Analyser extends Runnable
 {
-	public Moveable getNextMove(Evaluator evaluator, int ply);
-
 	public void setDepth(int depth);
 
 	public void setEvaluator(Evaluator eval);
