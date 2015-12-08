@@ -72,55 +72,66 @@ public class Game
 				Thread.sleep(25);
 			} catch (InterruptedException e) {;}
 			if (timeControl.isDone()){
-				m = timeControl.getResult();
-				if(m != null)
-				{
-					xBoardIO.write(new MoveEvent(m));
-					long difference = (new Date()).getTime() - starttime;
-					timeleft = (timeleft - difference) + timeinc;
-					System.err.printf("that move took roughly %d seconds, we now have roughly %d seconds left\n",difference/1000,timeleft/1000);
-					evaluator.makeMove(m);
-					timeControl.reset();
-					if (--movesleft == 0) {
-						movesleft = basemoves;
-						timeleft = basetime;
-					}
-				}
-				else
-				{
-					xBoardIO.write(new StatusEvent(Status.Win));
-					timeControl.reset();
-				}
+				handleResult(timeControl.getResult());
 			}
-			ChessEvent event = xBoardIO.getNextEvent();
-			if (event != null)
-			{
-				// Should be some way to Dynamic Dispatch cast and get rid of the if
-				if(event instanceof MoveEvent)
-				{
-					processEvent((MoveEvent)event);
-				}
-				else if(event instanceof StatusEvent)
-				{
-					processEvent((StatusEvent)event);
-				}
-				else if (event instanceof TimeEvent)
-				{
-					processEvent((TimeEvent)event);
-				}
-				else if (event instanceof MessageEvent)
-				{
-					processEvent((MessageEvent)event);
-				}
-				else if (event instanceof DepthEvent)
-				{
-					processEvent((DepthEvent)event);
-				}
-				else if(event instanceof ErrorEvent)
-				{
-					xBoardIO.write((ErrorEvent) event);
-				}
+			handleEvent(xBoardIO.getNextEvent());
+		}
+	}
+
+	private void handleResult(Moveable moveable) {
+		if(moveable != null)
+		{
+			xBoardIO.write(new MoveEvent(moveable));
+
+			long difference = (new Date()).getTime() - starttime;
+			timeleft = (timeleft - difference) + timeinc;
+			System.err.printf("that move took roughly %d seconds, we now have roughly %d seconds left\n",difference/1000,timeleft/1000);
+
+			evaluator.makeMove(moveable);
+
+			timeControl.reset();
+
+			if (--movesleft == 0) {
+				movesleft = basemoves;
+				timeleft = basetime;
 			}
+		}
+		else
+		{
+			xBoardIO.write(new StatusEvent(Status.Win));
+			timeControl.reset();
+		}
+	}
+
+	private void handleEvent(ChessEvent event) {
+		if (event == null) {
+			return;
+		}
+
+		// Should be some way to Dynamic Dispatch cast and get rid of the if
+		if(event instanceof MoveEvent)
+		{
+			processEvent((MoveEvent)event);
+		}
+		else if(event instanceof StatusEvent)
+		{
+			processEvent((StatusEvent)event);
+		}
+		else if (event instanceof TimeEvent)
+		{
+			processEvent((TimeEvent)event);
+		}
+		else if (event instanceof MessageEvent)
+		{
+			processEvent((MessageEvent)event);
+		}
+		else if (event instanceof DepthEvent)
+		{
+			processEvent((DepthEvent)event);
+		}
+		else if(event instanceof ErrorEvent)
+		{
+			xBoardIO.write((ErrorEvent) event);
 		}
 	}
 
