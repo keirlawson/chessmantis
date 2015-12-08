@@ -31,14 +31,13 @@ public class Game
 	private int maxdepth = 0;//The maximum depth of game tree that we will analyse to, 0 == infinite
 	
 	private TimeControl timeControl;
-	private Thread thread;
+	private Thread timeControlThread;
 	
 	/**
 	 * Constructor
 	 * 
 	 */
-	public Game(String evaluatorString, String analyserString)
-	{
+	public Game(String evaluatorString, String analyserString) {
 		xBoardIO = new XBoardIO(System.in, System.out);
 		try {
 			evaluator = loadInstance(evaluatorString);
@@ -53,6 +52,75 @@ public class Game
 			//That analyser didn't work... default to minimax
 			//FIXME should report an error here... somehow
 			analyser = new MiniMaxAnalyser();
+		}
+	}
+
+	public void start() {
+
+		Moveable m;
+
+		Thread thread = new Thread(xBoardIO);
+		thread.start();
+
+		timeControl = new TimeControl(evaluator, analyser);
+		timeControlThread = new Thread(timeControl);
+
+		for(;;)
+		{
+			try {
+				// Avoids thrashing
+				Thread.sleep(25);
+			} catch (InterruptedException e) {;}
+			if (timeControl.isDone()){
+				m = timeControl.getResult();
+				if(m != null)
+				{
+					xBoardIO.write(new MoveEvent(m));
+					long difference = (new Date()).getTime() - starttime;
+					timeleft = (timeleft - difference) + timeinc;
+					System.err.printf("that move took roughly %d seconds, we now have roughly %d seconds left\n",difference/1000,timeleft/1000);
+					evaluator.makeMove(m);
+					timeControl.reset();
+					if (--movesleft == 0) {
+						movesleft = basemoves;
+						timeleft = basetime;
+					}
+				}
+				else
+				{
+					xBoardIO.write(new StatusEvent(Status.Win));
+					timeControl.reset();
+				}
+			}
+			ChessEvent event = xBoardIO.getNextEvent();
+			if (event != null)
+			{
+				// Should be some way to Dynamic Dispatch cast and get rid of the if
+				if(event instanceof MoveEvent)
+				{
+					ProcessEvent((MoveEvent)event);
+				}
+				else if(event instanceof StatusEvent)
+				{
+					ProcessEvent((StatusEvent)event);
+				}
+				else if (event instanceof TimeEvent)
+				{
+					ProcessEvent((TimeEvent)event);
+				}
+				else if (event instanceof MessageEvent)
+				{
+					ProcessEvent((MessageEvent)event);
+				}
+				else if (event instanceof DepthEvent)
+				{
+					ProcessEvent((DepthEvent)event);
+				}
+				else if(event instanceof ErrorEvent)
+				{
+					xBoardIO.write((ErrorEvent) event);
+				}
+			}
 		}
 	}
 
@@ -103,8 +171,8 @@ public class Game
 					//Dont know why this works... but it does (seems to be a problem with the reference) - KL
 					timeControl.setEvaluator(evaluator);
 					timeControl.settimeformove(timeleft/movesleft);
-					thread = new Thread(timeControl);
-					thread.start();
+					timeControlThread = new Thread(timeControl);
+					timeControlThread.start();
 				}
 			}
 		}
@@ -165,8 +233,8 @@ public class Game
 				//Dont know why this works... but it does (seems to be a problem with the reference) - KL
 				timeControl.setEvaluator(evaluator);
 				timeControl.settimeformove(timeleft/movesleft);
-				thread = new Thread(timeControl);
-				thread.start();
+				timeControlThread = new Thread(timeControl);
+				timeControlThread.start();
 				break;
 			default:
 				break;
@@ -218,69 +286,6 @@ public class Game
 			}
 		}
 		Game game = new Game(evaluatorName, analyserName);
-		Moveable m;
-		
-		Thread thread = new Thread(game.xBoardIO);
-		thread.start();
-		game.timeControl = new TimeControl(game.evaluator,game.analyser);
-		game.thread = new Thread(game.timeControl);
-
-		for(;;)
-		{
-			try {
-				// Avoids thrashing
-				Thread.sleep(25);
-			} catch (InterruptedException e) {;}
-			if (game.timeControl.isDone()){
-				m = game.timeControl.getResult();
-				if(m != null)
-				{
-					game.xBoardIO.write(new MoveEvent(m));
-					long difference = (new Date()).getTime() - game.starttime;
-					game.timeleft = (game.timeleft - difference) + game.timeinc;
-					System.err.printf("that move took roughly %d seconds, we now have roughly %d seconds left\n",difference/1000,game.timeleft/1000);
-					game.evaluator.makeMove(m);
-					game.timeControl.reset();
-					if (--game.movesleft == 0) {
-						game.movesleft = game.basemoves;
-						game.timeleft = game.basetime;
-					}
-				}
-				else
-				{
-					game.xBoardIO.write(new StatusEvent(Status.Win));
-					game.timeControl.reset();
-				}
-			}
-			ChessEvent event = game.xBoardIO.getNextEvent();
-			if (event != null)
-			{
-				// Should be some way to Dynamic Dispatch cast and get rid of the if
-				if(event instanceof MoveEvent)
-				{
-					game.ProcessEvent((MoveEvent)event);
-				}
-				else if(event instanceof StatusEvent)
-				{
-					game.ProcessEvent((StatusEvent)event);
-				}
-				else if (event instanceof TimeEvent)
-				{
-					game.ProcessEvent((TimeEvent)event);
-				}
-				else if (event instanceof MessageEvent)
-				{
-					game.ProcessEvent((MessageEvent)event);
-				}
-				else if (event instanceof DepthEvent)
-				{
-					game.ProcessEvent((DepthEvent)event);
-				}
-				else if(event instanceof ErrorEvent)
-				{
-					game.xBoardIO.write((ErrorEvent) event);
-				}
-			}
-		}
+		game.start();
 	}
 }
