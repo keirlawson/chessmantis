@@ -217,13 +217,13 @@ public class Game
 				}
 			}
 		}
-		Game g = new Game(evaluatorName, analyserName);
+		Game game = new Game(evaluatorName, analyserName);
 		Moveable m;
 		
-		Thread thread = new Thread(g.xBoardIO);
+		Thread thread = new Thread(game.xBoardIO);
 		thread.start();
-		g.timeControl = new TimeControl(g.evaluator,g.analyser);
-		g.thread = new Thread(g.timeControl);
+		game.timeControl = new TimeControl(game.evaluator,game.analyser);
+		game.thread = new Thread(game.timeControl);
 
 		for(;;)
 		{
@@ -231,54 +231,54 @@ public class Game
 				// Avoids thrashing
 				Thread.sleep(25);
 			} catch (InterruptedException e) {;}
-			if (g.timeControl.isDone()){
-				m = g.timeControl.getResult();
+			if (game.timeControl.isDone()){
+				m = game.timeControl.getResult();
 				if(m != null)
 				{
-					g.xBoardIO.write(new MoveEvent(m));
-					long difference = (new Date()).getTime() - g.starttime;
-					g.timeleft = (g.timeleft - difference) + g.timeinc;
-					System.err.printf("that move took roughly %d seconds, we now have roughly %d seconds left\n",difference/1000,g.timeleft/1000);
-					g.evaluator.makeMove(m);
-					g.timeControl.reset();
-					if (--g.movesleft == 0) {
-						g.movesleft = g.basemoves;
-						g.timeleft = g.basetime;
+					game.xBoardIO.write(new MoveEvent(m));
+					long difference = (new Date()).getTime() - game.starttime;
+					game.timeleft = (game.timeleft - difference) + game.timeinc;
+					System.err.printf("that move took roughly %d seconds, we now have roughly %d seconds left\n",difference/1000,game.timeleft/1000);
+					game.evaluator.makeMove(m);
+					game.timeControl.reset();
+					if (--game.movesleft == 0) {
+						game.movesleft = game.basemoves;
+						game.timeleft = game.basetime;
 					}
 				}
 				else
 				{
-					g.xBoardIO.write(new StatusEvent(Status.Win));
-					g.timeControl.reset();
+					game.xBoardIO.write(new StatusEvent(Status.Win));
+					game.timeControl.reset();
 				}
 			}
-			ChessEvent c = g.xBoardIO.getNextEvent();
-			if (c != null)
+			ChessEvent event = game.xBoardIO.getNextEvent();
+			if (event != null)
 			{
 				// Should be some way to Dynamic Dispatch cast and get rid of the if
-				if(c instanceof MoveEvent)
+				if(event instanceof MoveEvent)
 				{
-					g.ProcessEvent((MoveEvent)c);
+					game.ProcessEvent((MoveEvent)event);
 				}
-				else if(c instanceof StatusEvent)
+				else if(event instanceof StatusEvent)
 				{
-					g.ProcessEvent((StatusEvent)c);
+					game.ProcessEvent((StatusEvent)event);
 				}
-				else if (c instanceof TimeEvent)
+				else if (event instanceof TimeEvent)
 				{
-					g.ProcessEvent((TimeEvent)c);
+					game.ProcessEvent((TimeEvent)event);
 				}
-				else if (c instanceof MessageEvent)
+				else if (event instanceof MessageEvent)
 				{
-					g.ProcessEvent((MessageEvent)c);
+					game.ProcessEvent((MessageEvent)event);
 				}
-				else if (c instanceof DepthEvent)
+				else if (event instanceof DepthEvent)
 				{
-					g.ProcessEvent((DepthEvent)c);
+					game.ProcessEvent((DepthEvent)event);
 				}
-				else if(c instanceof ErrorEvent)
+				else if(event instanceof ErrorEvent)
 				{
-					g.xBoardIO.write((ErrorEvent) c);
+					game.xBoardIO.write((ErrorEvent) event);
 				}
 			}
 		}
