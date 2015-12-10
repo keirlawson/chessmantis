@@ -6,8 +6,10 @@ import uk.ac.gla.chessmantis.evaluator.Evaluator;
 import uk.ac.gla.chessmantis.event.*;
 
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Game
 {
@@ -25,6 +27,7 @@ public class Game
 	
 	private TimeControl timeControl;
 	ExecutorService timeControlExecutor = Executors.newFixedThreadPool(1);
+	Future<Moveable> futureBestMove;
 
 	public Game(Evaluator evaluator, Analyser analyser) {
 		xBoardIO = new XBoardIO(System.in, System.out);
@@ -37,17 +40,21 @@ public class Game
 		thread.start();
 
 		timeControl = new TimeControl(evaluator, analyser);
-		timeControlExecutor.submit(timeControl);
 
 		for(;;)
 		{
 			try {
 				// Avoids thrashing
 				Thread.sleep(25);
+
+				if(futureBestMove != null && futureBestMove.isDone()) {
+					handleResult(futureBestMove.get());
+					futureBestMove = null;
+				}
+
 			} catch (InterruptedException e) {;}
-			if (timeControl.isDone()){
-				handleResult(timeControl.getResult());
-			}
+			catch (ExecutionException ee) {;}
+
 			handleEvent(xBoardIO.getNextEvent());
 		}
 	}
@@ -63,8 +70,6 @@ public class Game
 
 			evaluator.makeMove(moveable);
 
-			timeControl.reset();
-
 			if (--movesleft == 0) {
 				movesleft = basemoves;
 				timeleft = basetime;
@@ -73,7 +78,6 @@ public class Game
 		else
 		{
 			xBoardIO.write(new StatusEvent(Status.Win));
-			timeControl.reset();
 		}
 	}
 
@@ -150,7 +154,7 @@ public class Game
 					//Dont know why this works... but it does (seems to be a problem with the reference) - KL
 					timeControl.setEvaluator(evaluator);
 					timeControl.settimeformove(timeleft/movesleft);
-					timeControlExecutor.submit(timeControl);
+					futureBestMove = timeControlExecutor.submit(timeControl);
 				}
 			}
 		}
@@ -211,7 +215,7 @@ public class Game
 				//Dont know why this works... but it does (seems to be a problem with the reference) - KL
 				timeControl.setEvaluator(evaluator);
 				timeControl.settimeformove(timeleft/movesleft);
-				timeControlExecutor.submit(timeControl);
+				futureBestMove = timeControlExecutor.submit(timeControl);
 				break;
 			default:
 				break;

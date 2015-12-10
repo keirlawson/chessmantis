@@ -5,7 +5,7 @@ import uk.ac.gla.chessmantis.evaluator.Evaluator;
 
 import java.util.concurrent.*;
 import java.util.Date;
-class TimeControl implements Runnable {
+class TimeControl implements Callable<Moveable> {
 	
 	Evaluator evaluator;
 
@@ -13,30 +13,10 @@ class TimeControl implements Runnable {
 
 	long timeformove;
 
-	int currentdepth = 1;
-
 	private int maxdepth = 0;
-
-	Moveable bestmove;
-
-	Moveable result;
-
-	private Boolean done = false;
-
-	public Moveable getResult() {
-		return result;
-	}
-
-	public boolean isDone() {
-		return done;
-	}
 
 	public void setMaxDepth(int maxdepth) {
 		this.maxdepth = maxdepth;
-	}
-
-	public void reset() {
-		done = false;
 	}
 
 	/**
@@ -50,9 +30,9 @@ class TimeControl implements Runnable {
 	}
 
 	public Moveable call() {
+		Moveable bestmove = null;
+		int currentdepth = 1;
 		long starttime = (new Date()).getTime();
-		ExecutorService executor = Executors.newFixedThreadPool(1);
-		currentdepth = 1;
 		analyser.reset();
 		analyser.setCancel(false);
 		analyser.setDepth(currentdepth);
@@ -100,11 +80,6 @@ class TimeControl implements Runnable {
 		return bestmove;
 	}
 
-	public void run() {
-		result = call();
-		done = true;
-	}
-
 	public void setEvaluator(Evaluator e) {
 		evaluator = e;
 	}
@@ -112,9 +87,5 @@ class TimeControl implements Runnable {
 	TimeControl(Evaluator e, Analyser a) {
 		evaluator = e;
 		analyser = a;
-
-		//calculate how much time we have to make a move
-
-
 	}
 }
