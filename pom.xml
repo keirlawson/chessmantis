@@ -36,7 +36,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>uk.ac.gla.chessmantis.Game</mainClass>
+                            <mainClass>uk.ac.gla.chessmantis.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

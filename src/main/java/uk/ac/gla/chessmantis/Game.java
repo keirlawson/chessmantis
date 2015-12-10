@@ -22,37 +22,17 @@ public class Game
 	private int basemoves = 0;
 	private long basetime = 0;
 	private boolean think = true;
-	private int maxdepth = 0;//The maximum depth of game tree that we will analyse to, 0 == infinite
 	
 	private TimeControl timeControl;
 	ExecutorService timeControlExecutor = Executors.newFixedThreadPool(1);
-	
-	/**
-	 * Constructor
-	 * 
-	 */
-	public Game(String evaluatorString, String analyserString) {
+
+	public Game(Evaluator evaluator, Analyser analyser) {
 		xBoardIO = new XBoardIO(System.in, System.out);
-		try {
-			evaluator = loadInstance(evaluatorString);
-		} catch (Exception e) {
-			//That evaluator didn't work... default to marmoset
-			//FIXME should report an error here... somehow
-			evaluator = new Mantis();
-		}
-		try {
-			analyser = loadInstance(analyserString);
-		} catch (Exception e) {
-			//That analyser didn't work... default to minimax
-			//FIXME should report an error here... somehow
-			analyser = new MiniMaxAnalyser();
-		}
+		this.evaluator = evaluator;
+		this.analyser = analyser;
 	}
 
 	public void start() {
-
-		Moveable m;
-
 		Thread thread = new Thread(xBoardIO);
 		thread.start();
 
@@ -127,12 +107,6 @@ public class Game
 		{
 			xBoardIO.write((ErrorEvent) event);
 		}
-	}
-
-	private <T>  T loadInstance(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-		Class clazz = Class.forName(className);
-		T instance = (T) clazz.newInstance();
-		return instance;
 	}
 	
 	/**
@@ -210,7 +184,7 @@ public class Game
 				break;
 			case New:
 				try {
-					evaluator = (Evaluator) evaluator.getClass().newInstance();
+					evaluator = evaluator.getClass().newInstance();
 				} catch (Exception e) {
 					//This should never really happen... unless say the class file was deleted during play
 				}
@@ -263,32 +237,4 @@ public class Game
 		timeControl.setMaxDepth(de.getDepth());
 	}
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args)
-	{
-		String evaluatorName = "uk.ac.gla.chessmantis.Mantis";
-		String analyserName = "AlphaBetaAnalyser";
-		if (args.length > 1) //need atleast two arguments to make sense
-		{
-			for (int i = 0; i < args.length; i++)
-			{
-				if (args[i].startsWith("-")) //If it is a flag...
-				{
-					char flag = args[i].charAt(1);
-					if (flag == 'e') //If the evaluator is specified
-					{
-						evaluatorName = args[++i];
-					}
-					else if (flag == 'a') //If the analyser is specified
-					{
-						analyserName = args[++i];
-					}
-				}
-			}
-		}
-		Game game = new Game(evaluatorName, analyserName);
-		game.start();
-	}
 }
