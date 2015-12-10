@@ -6,15 +6,9 @@ import uk.ac.gla.chessmantis.evaluator.Evaluator;
 import uk.ac.gla.chessmantis.event.*;
 
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-/**
- * 
- */
-
-/**
- * @author macdonal (n00b)
- *
- */
 public class Game
 {
 	private XBoardIO xBoardIO;
@@ -31,7 +25,7 @@ public class Game
 	private int maxdepth = 0;//The maximum depth of game tree that we will analyse to, 0 == infinite
 	
 	private TimeControl timeControl;
-	private Thread timeControlThread;
+	ExecutorService timeControlExecutor = Executors.newFixedThreadPool(1);
 	
 	/**
 	 * Constructor
@@ -63,7 +57,7 @@ public class Game
 		thread.start();
 
 		timeControl = new TimeControl(evaluator, analyser);
-		timeControlThread = new Thread(timeControl);
+		timeControlExecutor.submit(timeControl);
 
 		for(;;)
 		{
@@ -182,8 +176,7 @@ public class Game
 					//Dont know why this works... but it does (seems to be a problem with the reference) - KL
 					timeControl.setEvaluator(evaluator);
 					timeControl.settimeformove(timeleft/movesleft);
-					timeControlThread = new Thread(timeControl);
-					timeControlThread.start();
+					timeControlExecutor.submit(timeControl);
 				}
 			}
 		}
@@ -244,8 +237,7 @@ public class Game
 				//Dont know why this works... but it does (seems to be a problem with the reference) - KL
 				timeControl.setEvaluator(evaluator);
 				timeControl.settimeformove(timeleft/movesleft);
-				timeControlThread = new Thread(timeControl);
-				timeControlThread.start();
+				timeControlExecutor.submit(timeControl);
 				break;
 			default:
 				break;
