@@ -1,4 +1,4 @@
-package uk.ac.gla.chessmantis.event;
+package uk.ac.gla.chessmantis.evaluator;
 
 import uk.ac.gla.chessmantis.evaluator.Evaluator;
 import uk.ac.gla.chessmantis.evaluator.Macaque;

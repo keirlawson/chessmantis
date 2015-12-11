@@ -1,7 +1,6 @@
 package uk.ac.gla.chessmantis;
 
 import uk.ac.gla.chessmantis.analyser.Analyser;
-import uk.ac.gla.chessmantis.analyser.MiniMaxAnalyser;
 import uk.ac.gla.chessmantis.evaluator.Evaluator;
 import uk.ac.gla.chessmantis.event.*;
 
@@ -23,7 +22,7 @@ public class Game
 	private int timeinc = 0; //amount of time to increment timeleft by after a move
 	private int basemoves = 0;
 	private long basetime = 0;
-	private boolean think = true;
+	private boolean makeMoves = true;
 	
 	private TimeControl timeControl;
 	ExecutorService timeControlExecutor = Executors.newFixedThreadPool(1);
@@ -112,7 +111,18 @@ public class Game
 			xBoardIO.write((ErrorEvent) event);
 		}
 	}
-	
+
+	private void computeMove() {
+		// its the computers turn to make a move now
+		// Start the timer
+		starttime = (new Date()).getTime();
+		System.err.println("Executing new time control thread");
+		//Dont know why this works... but it does (seems to be a problem with the reference) - KL
+		timeControl.setEvaluator(evaluator);
+		timeControl.settimeformove(timeleft/movesleft);
+		futureBestMove = timeControlExecutor.submit(timeControl);
+	}
+
 	/**
 	 * Modifier
 	 *
@@ -145,16 +155,9 @@ public class Game
 			} */
 			else
 			{
-				if (think)
+				if (makeMoves)
 				{
-					// its the computers turn to make a move now
-					// Start the timer
-					starttime = (new Date()).getTime();
-					System.err.println("Executing new time control thread");
-					//Dont know why this works... but it does (seems to be a problem with the reference) - KL
-					timeControl.setEvaluator(evaluator);
-					timeControl.settimeformove(timeleft/movesleft);
-					futureBestMove = timeControlExecutor.submit(timeControl);
+					computeMove();
 				}
 			}
 		}
@@ -203,19 +206,12 @@ public class Game
 				break;
 			case Force:
 				// Stop the engine thinking
-				think = false;
+				makeMoves = false;
 				break;
 			case Go:
 				// Start the engine thinking
-				think = true;
-				// its the computers turn to make a move now
-				// Start the timer
-				starttime = (new Date()).getTime();
-				System.err.println("Executing new time control thread");
-				//Dont know why this works... but it does (seems to be a problem with the reference) - KL
-				timeControl.setEvaluator(evaluator);
-				timeControl.settimeformove(timeleft/movesleft);
-				futureBestMove = timeControlExecutor.submit(timeControl);
+				makeMoves = true;
+				computeMove();
 				break;
 			default:
 				break;
