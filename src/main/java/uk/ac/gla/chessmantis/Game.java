@@ -16,10 +16,10 @@ public class Game
 	private Evaluator evaluator;
 	private Analyser analyser;
 
-	private long starttime = 0;
-	private long timeleft = 0; //Time left (miliseconds) in which to make movesleft, default to 5 minutes
-	private int movesleft = 0; //Number of moves to make within timeleft, default to 40 moves
-	private int timeinc = 0; //amount of time to increment timeleft by after a move
+	private long currentMoveStartTime = 0;
+	private long gameTimeRemaining = 0; //Time left (miliseconds) in which to make gameMovesRemaining, default to 5 minutes
+	private int gameMovesRemaining = 0; //Number of moves to make within gameTimeRemaining, default to 40 moves
+	private int timeinc = 0; //amount of time to increment gameTimeRemaining by after a move
 	private int basemoves = 0;
 	private long basetime = 0;
 	private boolean makeMoves = true;
@@ -63,15 +63,15 @@ public class Game
 		{
 			xBoardIO.write(new MoveEvent(moveable));
 
-			long difference = (new Date()).getTime() - starttime;
-			timeleft = (timeleft - difference) + timeinc;
-			System.err.printf("that move took roughly %d seconds, we now have roughly %d seconds left\n",difference/1000,timeleft/1000);
+			long difference = (new Date()).getTime() - currentMoveStartTime;
+			gameTimeRemaining = (gameTimeRemaining - difference) + timeinc;
+			System.err.printf("that move took roughly %d seconds, we now have roughly %d seconds left\n",difference/1000, gameTimeRemaining /1000);
 
 			evaluator.makeMove(moveable);
 
-			if (--movesleft == 0) {
-				movesleft = basemoves;
-				timeleft = basetime;
+			if (--gameMovesRemaining == 0) {
+				gameMovesRemaining = basemoves;
+				gameTimeRemaining = basetime;
 			}
 		}
 		else
@@ -115,11 +115,11 @@ public class Game
 	private void computeMove() {
 		// its the computers turn to make a move now
 		// Start the timer
-		starttime = (new Date()).getTime();
+		currentMoveStartTime = (new Date()).getTime();
 		System.err.println("Executing new time control thread");
 		//Dont know why this works... but it does (seems to be a problem with the reference) - KL
 		timeControl.setEvaluator(evaluator);
-		timeControl.settimeformove(timeleft/movesleft);
+		timeControl.settimeformove(gameTimeRemaining / gameMovesRemaining);
 		futureBestMove = timeControlExecutor.submit(timeControl);
 	}
 
@@ -221,8 +221,8 @@ public class Game
 	
 	private void processEvent(TimeEvent te)
 	{
-		basetime = timeleft = te.getBase();
-		basemoves = movesleft = te.getMoves();
+		basetime = gameTimeRemaining = te.getBase();
+		basemoves = gameMovesRemaining = te.getMoves();
 		timeinc = te.getIncrement();
 	}
 	
