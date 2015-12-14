@@ -13,6 +13,14 @@ class TimeControl implements Supplier<Moveable> {
 	private long timeForMove;
 	private int maxDepth = 0;
 
+	private long currentTime() {
+		return ((new Date()).getTime());
+	}
+
+	private long timeTakenSoFar(long startTime) {
+		return currentTime() - startTime;
+	}
+
 	public void setMaxDepth(int maxDepth) {
 		this.maxDepth = maxDepth;
 	}
@@ -21,23 +29,29 @@ class TimeControl implements Supplier<Moveable> {
 		timeForMove = t;
 	}
 
+	//TODO this can surely be reduced
+	public Thread setupAnalyser(int depth) {
+		analyser.reset();
+		analyser.setCancel(false);
+		analyser.setDepth(depth);
+		analyser.setEvaluator(evaluator);
+		Thread analyserThread = new Thread(analyser);
+		analyserThread.start();
+		return analyserThread;
+	}
+
 	public Moveable get() {
 		Moveable bestMove = null;
 		int currentDepth = 1;
-		long startTime = (new Date()).getTime();
-		analyser.reset();
-		analyser.setCancel(false);
-		analyser.setDepth(currentDepth);
-		analyser.setEvaluator(evaluator);
-		Thread analyserThread = new Thread(analyser);
-		long analysisStartTime = (new Date()).getTime();
-		analyserThread.start();
-		while ((((new Date()).getTime()) - startTime) < timeForMove) {
+		long startTime = currentTime();
+		Thread analyserThread = setupAnalyser(currentDepth);
+		long analysisStartTime = currentTime();
+		while (timeTakenSoFar(startTime) < timeForMove) {
 			if (analyser.isDone()) {
 				System.err.printf("Evaluator finished, taking approximately %d milliseconds\n", (((new Date()).getTime()) - analysisStartTime));
 				bestMove = analyser.get();
 				System.err.printf("Suggested move is from %d to %d\n",bestMove.getFromPosition(),bestMove.getToPosition());
-				if ( (2*( ((new Date()).getTime()) - startTime )) > (timeForMove) ) {//If the time taken so far is more than the time left, dont bother to execute another analyser
+				if ( (2 * timeTakenSoFar(startTime)) > timeForMove ) {//If the time taken so far is more than the time left, dont bother to execute another analyser
 					System.err.println("Probably wont have time left to run another analyser, breaking");
 					break;
 				}
@@ -48,12 +62,8 @@ class TimeControl implements Supplier<Moveable> {
 					break;
 				}
 				System.err.printf("Evaluating to %d ply\n",currentDepth);
-				analyser.reset();
-				analyser.setDepth(currentDepth);
-				analyser.setEvaluator(evaluator);
-				analyserThread = new Thread(analyser);
-				analysisStartTime = (new Date()).getTime();
-				analyserThread.start();
+				analyserThread = setupAnalyser(currentDepth);
+				analysisStartTime = currentTime();
 			}
 			try {
 				Thread.sleep(20);
