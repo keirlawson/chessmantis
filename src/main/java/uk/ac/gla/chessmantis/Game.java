@@ -93,7 +93,7 @@ public class Game
 		System.err.println("Executing new time control thread");
 		//Dont know why this works... but it does (seems to be a problem with the reference) - KL
 		timeControl.setEvaluator(evaluator);
-		timeControl.settimeformove(gameTimeRemaining / gameMovesRemaining);
+		timeControl.setTimeForMove(gameTimeRemaining / gameMovesRemaining);
 		futureBestMove = CompletableFuture.supplyAsync(timeControl, timeControlExecutor);
 		futureBestMove.thenAccept(this::handleResult);
 	}

@@ -8,60 +8,51 @@ import java.util.function.Supplier;
 
 class TimeControl implements Supplier<Moveable> {
 	
-	Evaluator evaluator;
+	private Evaluator evaluator;
+	private Analyser analyser;
+	private long timeForMove;
+	private int maxDepth = 0;
 
-	Analyser analyser;
-
-	long timeformove;
-
-	private int maxdepth = 0;
-
-	public void setMaxDepth(int maxdepth) {
-		this.maxdepth = maxdepth;
+	public void setMaxDepth(int maxDepth) {
+		this.maxDepth = maxDepth;
 	}
 
-	/**
- 	 * Sets the time that the evaluation has to be made within
-	 * 
-	 * @param t The time left to make the moves in miliseconds
-	 *
- 	 */
-	public void settimeformove(long t) {
-		timeformove = t;
+	public void setTimeForMove(long t) {
+		timeForMove = t;
 	}
 
 	public Moveable get() {
-		Moveable bestmove = null;
-		int currentdepth = 1;
-		long starttime = (new Date()).getTime();
+		Moveable bestMove = null;
+		int currentDepth = 1;
+		long startTime = (new Date()).getTime();
 		analyser.reset();
 		analyser.setCancel(false);
-		analyser.setDepth(currentdepth);
+		analyser.setDepth(currentDepth);
 		analyser.setEvaluator(evaluator);
 		Thread analyserThread = new Thread(analyser);
-		long startantime = (new Date()).getTime();
+		long analysisStartTime = (new Date()).getTime();
 		analyserThread.start();
-		while ((((new Date()).getTime()) - starttime) < timeformove) {
+		while ((((new Date()).getTime()) - startTime) < timeForMove) {
 			if (analyser.isDone()) {
-				System.err.printf("uk.ac.gla.chessmantis.evaluator.Evaluator finished, taking approximatley %d miliseconds\n", (((new Date()).getTime()) - startantime));
-				bestmove = analyser.get();
-				System.err.printf("Suggested move is from %d to %d\n",bestmove.getFromPosition(),bestmove.getToPosition());
-				if ( (2*( ((new Date()).getTime()) - starttime )) > (timeformove) ) {//If the time taken so far is more than the time left, dont bother to execute another analyser
+				System.err.printf("Evaluator finished, taking approximately %d milliseconds\n", (((new Date()).getTime()) - analysisStartTime));
+				bestMove = analyser.get();
+				System.err.printf("Suggested move is from %d to %d\n",bestMove.getFromPosition(),bestMove.getToPosition());
+				if ( (2*( ((new Date()).getTime()) - startTime )) > (timeForMove) ) {//If the time taken so far is more than the time left, dont bother to execute another analyser
 					System.err.println("Probably wont have time left to run another analyser, breaking");
 					break;
 				}
-				currentdepth++;
-				if ((maxdepth != 0) && (currentdepth == maxdepth))
+				currentDepth++;
+				if ((maxDepth != 0) && (currentDepth == maxDepth))
 				{
 					System.err.println("Reached maximum depth, breaking");
 					break;
 				}
-				System.err.printf("Evaluating to %d ply\n",currentdepth);
+				System.err.printf("Evaluating to %d ply\n",currentDepth);
 				analyser.reset();
-				analyser.setDepth(currentdepth);
+				analyser.setDepth(currentDepth);
 				analyser.setEvaluator(evaluator);
 				analyserThread = new Thread(analyser);
-				startantime = (new Date()).getTime();
+				analysisStartTime = (new Date()).getTime();
 				analyserThread.start();
 			}
 			try {
@@ -78,7 +69,7 @@ class TimeControl implements Supplier<Moveable> {
 			} catch (InterruptedException e) {;}
 		}
 		System.err.println("Finished evaluation");
-		return bestmove;
+		return bestMove;
 	}
 
 	public void setEvaluator(Evaluator e) {
