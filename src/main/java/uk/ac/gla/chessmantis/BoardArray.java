@@ -20,23 +20,11 @@ public class BoardArray implements Board
     private int plyPlayed = 0; //TT private state corresponding to the number of plies playe
     
     private int err = 0; //TT private state for checking the number of calls to routines
-    
-    // Zobrist hashing related fields
-	private long [][][] zPieces; // DG - piece-type, side to move, square
-    
-	private long zobristKey;
-	private long zCastlingRights; // DG - random key indicating castling
-	private long zEnPassant; // DG - random key indicating en passant
-	private long zSide; // DG - random key indicating black move
-	private long zPromotion; // DG - random key indicating promotion
-	private long zCapture; // DG - random key indicating capture
 	
 	private final int PIECETYPE = 7;
 	private final int SIDETOMOVE = 2;
 	private final int EMPTY_SQUARE = 0;
-	
-	// Transposition table related fields
-	
+
 	static private int oldNode;
 	
     /**
@@ -87,7 +75,6 @@ public class BoardArray implements Board
 		
 		isPlayerTurn = true;
 		oldNode = -1;
-		generateHashCodes();
 	}
 	
 	/**
@@ -104,7 +91,6 @@ public class BoardArray implements Board
 			cb[small2big(i)]=pieces[i];
 		}
 		oldNode = -1;
-		generateHashCodes();
 	}
 	
 	/**
@@ -221,14 +207,13 @@ public class BoardArray implements Board
 		
 		isPlayerTurn = true;
 		oldNode = -1;
-		generateHashCodes();
 	}
 	
 	/**
 	 * @author TT & DG
 	 * @param Moveable m - move, that assumes a 64 square representation
 	 * @return true if the move seems to be legal
-	 * @see Board#IsLegalMove(Moveable)
+	 * @see Board#isLegalMove(Moveable)
 	 * NB this doesn't check if this leaves the side checked
 	 */
 	private boolean isLegalMove(Moveable m)
@@ -732,8 +717,6 @@ public class BoardArray implements Board
 			return false;
 		}
 		
-		generateZobristKey(m);
-		
 		isPlayerTurn=!isPlayerTurn; //TT forces isPlayerTurn() to operate correctly
 		oldNode *= -1;
 		plyPlayed++;
@@ -754,8 +737,6 @@ public class BoardArray implements Board
 			return false;
 		
 		isPlayerTurn=!isPlayerTurn;
-		
-		generateZobristKey(m);
 		
 		int posf = small2big(m.getFromPosition());
 		int post = small2big(m.getToPosition());
@@ -929,117 +910,7 @@ public class BoardArray implements Board
 	{
 		return isPlayerTurn;
 	}
-	
-	//
-	// DG - Zobrist hashing handling block
 
-	/**
-	 * modifier
-	 * @author DG
-	 * @return void
-	 * method generates the Zobrist key for the current board situation
-	 * it is error prone, since relies on key from previous move
-	 */
-	
-	public void generateZobristKey(Moveable m)
-	{
-		int posf = small2big(m.getFromPosition());
-		int post = small2big(m.getToPosition());
-		int colour = 0;
-		
-		if (!this.isPlayerTurn())
-		{
-			this.zobristKey ^= this.zSide;
-			colour = 1;
-		}
-		
-		if (this.isCastling(m))
-		{
-			this.zobristKey ^= this.zCastlingRights;
-			this.zobristKey ^= zPieces[3][colour][m.getRookFrom()];
-			this.zobristKey ^= zPieces[3][colour][m.getRookTo()];
-		}
-		
-		// capture
-		if (m.isCapture())
-		{
-			Piece p = m.getCapturedFigure();
-			int capcol;
-			
-			if (colour == 1)
-				capcol = 0;
-			else
-				capcol = 1;
-			
-			this.zobristKey ^= this.zCapture;
-			this.zobristKey ^= zPieces[p.getID()][capcol][post];
-		}
-		
-		// DG - en Passant TODO when implemented
-		//if ()
-		//{
-		//	this.zobristKey ^= this.enPassant;
-		//}
-		
-		// DG - promotion or normal move
-		if (m.isPromotion())
-		{
-			this.zobristKey ^= this.zPromotion;
-			this.zobristKey ^= zPieces[6][colour][posf];
-			this.zobristKey ^= zPieces[cb[post].getID()][colour][post];
-		}
-		else
-		{
-
-		this.zobristKey ^= zPieces[cb[post].getID()][colour][post];
-		this.zobristKey ^= zPieces[cb[post].getID()][colour][posf];
-		}
-	}
-	
-	/**
-	 * modifier
-	 * @author DG
-	 * @return void
-	 * generates random keys for all board squares and situations, as well, as the
-	 * initial Zobrist key
-	 */
-	
-	public void generateHashCodes()
-	{
-		this.zobristKey = 0;
-		
-		Random rnd = new Random();
-		this.zSide = Math.abs(rnd.nextLong());
-		this.zCastlingRights = Math.abs(rnd.nextLong());
-		this.zEnPassant = Math.abs(rnd.nextLong());
-		this.zCapture = Math.abs(rnd.nextLong());
-		this.zPromotion = Math.abs(rnd.nextLong());
-		
-		this.zPieces = new long[this.PIECETYPE][this.SIDETOMOVE][this.MAXSQUARES]; // piece, side to move, square
-		for(int square = 0; square < this.MAXSQUARES; square++)
-		{
-			if((square & 0x88) == 0)
-			{		
-				for(int p = 0; p < this.PIECETYPE; p++)
-				{
-					zPieces[p][0][square] = Math.abs(rnd.nextLong());
-					zPieces[p][1][square] = Math.abs(rnd.nextLong());
-				}
-				// DG - establishing initial hash value for the board
-				if (this.cb[square] != null)
-				{
-					int piece = this.cb[square].getID(); 
-					int colour = this.cb[square].isWhite() ? 0 : 1;
-					zobristKey ^= zPieces[piece][colour][square];
-				}
-			}
-			else square +=7;
-		}
-	}
-	
-	// DG - End of Zobrist hashing block
-	//
-	
 	public static void printMoves(List<Moveable> lm)
 	{
 		for (Moveable m : lm)
