@@ -5,10 +5,7 @@ import uk.ac.gla.chessmantis.evaluator.Evaluator;
 import uk.ac.gla.chessmantis.event.*;
 
 import java.util.Date;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class Game
 {
@@ -26,7 +23,7 @@ public class Game
 	
 	private TimeControl timeControl;
 	ExecutorService timeControlExecutor = Executors.newFixedThreadPool(1);
-	Future<Moveable> futureBestMove;
+	CompletableFuture<Moveable> futureBestMove;
 
 	public Game(Evaluator evaluator, Analyser analyser) {
 		xBoardIO = new XBoardIO(System.in, System.out);
@@ -45,20 +42,13 @@ public class Game
 			try {
 				// Avoids thrashing
 				Thread.sleep(25);
-
-				if(futureBestMove != null && futureBestMove.isDone()) {
-					handleResult(futureBestMove.get());
-					futureBestMove = null;
-				}
-
 			} catch (InterruptedException e) {;}
-			catch (ExecutionException ee) {;}
 
 			handleEvent(xBoardIO.getNextEvent());
 		}
 	}
 
-	private void handleResult(Moveable moveable) {
+	private synchronized void handleResult(Moveable moveable) {
 		if(moveable != null)
 		{
 			xBoardIO.write(new MoveEvent(moveable));
@@ -80,7 +70,7 @@ public class Game
 		}
 	}
 
-	private void handleEvent(ChessEvent event) {
+	private synchronized void handleEvent(ChessEvent event) {
 		if (event == null) {
 			return;
 		}
@@ -120,7 +110,8 @@ public class Game
 		//Dont know why this works... but it does (seems to be a problem with the reference) - KL
 		timeControl.setEvaluator(evaluator);
 		timeControl.settimeformove(gameTimeRemaining / gameMovesRemaining);
-		futureBestMove = timeControlExecutor.submit(timeControl);
+		futureBestMove = CompletableFuture.supplyAsync(timeControl, timeControlExecutor);
+		futureBestMove.thenAccept(this::handleResult);
 	}
 
 	/**

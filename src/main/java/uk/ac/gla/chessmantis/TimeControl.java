@@ -3,9 +3,10 @@ package uk.ac.gla.chessmantis;
 import uk.ac.gla.chessmantis.analyser.Analyser;
 import uk.ac.gla.chessmantis.evaluator.Evaluator;
 
-import java.util.concurrent.*;
 import java.util.Date;
-class TimeControl implements Callable<Moveable> {
+import java.util.function.Supplier;
+
+class TimeControl implements Supplier<Moveable> {
 	
 	Evaluator evaluator;
 
@@ -29,7 +30,7 @@ class TimeControl implements Callable<Moveable> {
 		timeformove = t;
 	}
 
-	public Moveable call() {
+	public Moveable get() {
 		Moveable bestmove = null;
 		int currentdepth = 1;
 		long starttime = (new Date()).getTime();
