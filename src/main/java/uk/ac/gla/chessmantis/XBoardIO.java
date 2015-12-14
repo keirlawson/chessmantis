@@ -5,13 +5,9 @@ import uk.ac.gla.chessmantis.event.*;
 import java.lang.*;
 import java.util.*;
 import java.io.*;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.Consumer;
 
-/**
- * @author Keir Lawson and Neil Henning
- */
-
-public class XBoardIO implements Readable, Writeable, Runnable
+public class XBoardIO implements ChessEventEmitter, ChessEventWriter, Runnable
 {
 	private Scanner scan;
 	private Formatter form;
@@ -20,9 +16,8 @@ public class XBoardIO implements Readable, Writeable, Runnable
 	final String enginename = "Chess Mantis";
 	final String[] featurenames = {"name","ics","usermove","ping","analyze","colors","pause","setboard","time","sigterm","sigint"};//,"time"};
 	final boolean[] usefeatures = {false,false,true,true,false,false,false,true,false,false,false};
-	final String[] ignorablecommands = {"accepted","xboard","computer","variant","random"};	
-
-	Deque<ChessEvent> eventqueue = new ConcurrentLinkedDeque<ChessEvent>();
+	final String[] ignorablecommands = {"accepted","xboard","computer","variant","random"};
+	private Consumer<ChessEvent> eventHandler;
 
 	/* NH - Commands being ignored right now are as follows;
 	 * resign
@@ -81,30 +76,19 @@ public class XBoardIO implements Readable, Writeable, Runnable
 		form.format("Error (%s): %s\n", event.getError(), event.getCommand());
 	}
 
-	public void rawWrite(String message)
-	{
-		form.format("%s\n",message);
-	}
-
 	public void run() {
 		while (true) {
 			ChessEvent c = parseCommand(scan.next());
 			if(c != null) {
-				eventqueue.add(c);
+				eventHandler.accept(c);
 			}
 		}
-	}
-	
-	/** Returns the next uk.ac.gla.chessmantis.event.ChessEvent, or null if no event found. */
-	public ChessEvent getNextEvent()
-	{
-		return eventqueue.pollLast();
 	}
 
 	/**
  	 * returns an uk.ac.gla.chessmantis.event.ChessEvent or null if it needs to recieve the next command before returning a uk.ac.gla.chessmantis.event.ChessEvent
  	 *
- 	 * @param	command	A string containing the command and any arguments it carried
+ 	 * @param	commandline	A string containing the command and any arguments it carried
  	 * @return		A uk.ac.gla.chessmantis.ChessEvent or null
  	 * @see            ChessEvent
  	 */
@@ -217,5 +201,10 @@ public class XBoardIO implements Readable, Writeable, Runnable
 		{
 			return (new ErrorEvent("Couldn't Recognise Command", command));
 		}
+	}
+
+	@Override
+	public void handleChessEvent(Consumer<ChessEvent> eventHandler) {
+		this.eventHandler = eventHandler;
 	}
 }

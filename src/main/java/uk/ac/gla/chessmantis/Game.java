@@ -9,9 +9,8 @@ import java.util.concurrent.*;
 
 public class Game
 {
-	private XBoardIO xBoardIO;
+	private ChessEventWriter eventWriter;
 	private Evaluator evaluator;
-	private Analyser analyser;
 
 	private long currentMoveStartTime = 0;
 	private long gameTimeRemaining = 0; //Time left (miliseconds) in which to make gameMovesRemaining, default to 5 minutes
@@ -23,35 +22,20 @@ public class Game
 	
 	private TimeControl timeControl;
 	ExecutorService timeControlExecutor = Executors.newFixedThreadPool(1);
-	CompletableFuture<Moveable> futureBestMove;
+	CompletionStage<Moveable> futureBestMove;
 
-	public Game(Evaluator evaluator, Analyser analyser) {
-		xBoardIO = new XBoardIO(System.in, System.out);
+	public Game(Evaluator evaluator, Analyser analyser, ChessEventEmitter eventEmitter, ChessEventWriter eventWriter) {
+		this.eventWriter = eventWriter;
 		this.evaluator = evaluator;
-		this.analyser = analyser;
-	}
 
-	public void start() {
-		Thread thread = new Thread(xBoardIO);
-		thread.start();
-
-		timeControl = new TimeControl(evaluator, analyser);
-
-		for(;;)
-		{
-			try {
-				// Avoids thrashing
-				Thread.sleep(25);
-			} catch (InterruptedException e) {;}
-
-			handleEvent(xBoardIO.getNextEvent());
-		}
+		this.timeControl = new TimeControl(evaluator, analyser);
+		eventEmitter.handleChessEvent(this::handleEvent);
 	}
 
 	private synchronized void handleResult(Moveable moveable) {
 		if(moveable != null)
 		{
-			xBoardIO.write(new MoveEvent(moveable));
+			eventWriter.write(new MoveEvent(moveable));
 
 			long difference = (new Date()).getTime() - currentMoveStartTime;
 			gameTimeRemaining = (gameTimeRemaining - difference) + timeinc;
@@ -66,7 +50,7 @@ public class Game
 		}
 		else
 		{
-			xBoardIO.write(new StatusEvent(Status.Win));
+			eventWriter.write(new StatusEvent(Status.Win));
 		}
 	}
 
@@ -98,7 +82,7 @@ public class Game
 		}
 		else if(event instanceof ErrorEvent)
 		{
-			xBoardIO.write((ErrorEvent) event);
+			eventWriter.write((ErrorEvent) event);
 		}
 	}
 
@@ -136,7 +120,7 @@ public class Game
 			{
 				
 				// Create a status event - Win
-				xBoardIO.write(new StatusEvent(Status.Win));
+				eventWriter.write(new StatusEvent(Status.Win));
 			}
 			/* else if (g.evaluator.isStalemate())
 			{
@@ -156,7 +140,7 @@ public class Game
 		{
 			// Illegal move
 			System.err.println("Game.java: The move was illegal");
-			xBoardIO.write(new IllegalMoveEvent(me.getMove()));
+			eventWriter.write(new IllegalMoveEvent(me.getMove()));
 		}
 		
 		// Computer move
@@ -207,7 +191,7 @@ public class Game
 			default:
 				break;
 		}
-		xBoardIO.write(se);
+		eventWriter.write(se);
 	}
 	
 	private void processEvent(TimeEvent te)

@@ -17,7 +17,7 @@ import java.awt.event.*;
  * @version 1.0
  */
 
-public class DebugWriter implements Writeable
+public class DebugWriter implements ChessEventWriter
 {
 	private JFrame frame;
 	private JTextPane textarea;

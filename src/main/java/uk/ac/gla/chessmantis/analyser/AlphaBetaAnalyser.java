@@ -2,7 +2,7 @@ package uk.ac.gla.chessmantis.analyser;
 
 import uk.ac.gla.chessmantis.DebugWriter;
 import uk.ac.gla.chessmantis.Moveable;
-import uk.ac.gla.chessmantis.Writeable;
+import uk.ac.gla.chessmantis.ChessEventWriter;
 import uk.ac.gla.chessmantis.evaluator.Capuchin;
 import uk.ac.gla.chessmantis.evaluator.Evaluator;
 import uk.ac.gla.chessmantis.event.MoveEvent;
@@ -165,7 +165,7 @@ public class AlphaBetaAnalyser implements Analyser
 	{
 		Evaluator omega = new Capuchin();
 		AlphaBetaAnalyser epsilon = new AlphaBetaAnalyser();
-		Writeable writer = new DebugWriter("uk.ac.gla.chessmantis.evaluator.Marmoset!");
+		ChessEventWriter writer = new DebugWriter("uk.ac.gla.chessmantis.evaluator.Marmoset!");
 		
 		for(int i = 0; i < 2; i++)
 		{

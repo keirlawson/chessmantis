@@ -29,8 +29,9 @@ public class Main {
             analyser = new MiniMaxAnalyser();
         }
 
-        final Game game = new Game(evaluator, analyser);
-        game.start();
+        XBoardIO xBoardIO = new XBoardIO(System.in, System.out);
+        new Game(evaluator, analyser, xBoardIO, xBoardIO);
+        xBoardIO.run();
     }
 
     public static void main(final String[] args)
