@@ -48,7 +48,7 @@ class TimeControl implements Supplier<Moveable> {
 		long analysisStartTime = currentTime();
 		while (timeTakenSoFar(startTime) < timeForMove) {
 			if (analyser.isDone()) {
-				System.err.printf("Evaluator finished, taking approximately %d milliseconds\n", (((new Date()).getTime()) - analysisStartTime));
+				System.err.printf("Evaluator finished, taking approximately %d milliseconds\n", (currentTime() - analysisStartTime));
 				bestMove = analyser.get();
 				System.err.printf("Suggested move is from %d to %d\n",bestMove.getFromPosition(),bestMove.getToPosition());
 				if ( (2 * timeTakenSoFar(startTime)) > timeForMove ) {//If the time taken so far is more than the time left, dont bother to execute another analyser

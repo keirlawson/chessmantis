@@ -98,11 +98,7 @@ public class Game
 		futureBestMove.thenAccept(this::handleResult);
 	}
 
-	/**
-	 * Modifier
-	 *
-	 */
-	private void Quit()
+	private void quit()
 	{
 		System.exit(0);
 	}
@@ -153,7 +149,7 @@ public class Game
 		switch (se.getStatus())
 		{
 			case Quit:
-				Quit();
+				quit();
 				break;
 			case OfferedDraw:
 				break;
