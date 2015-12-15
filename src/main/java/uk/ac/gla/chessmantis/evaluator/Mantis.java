@@ -1,5 +1,6 @@
-package uk.ac.gla.chessmantis;
+package uk.ac.gla.chessmantis.evaluator;
 
+import uk.ac.gla.chessmantis.BoardArray;
 import uk.ac.gla.chessmantis.evaluator.Evaluator;
 import uk.ac.gla.chessmantis.piece.Bishop;
 import uk.ac.gla.chessmantis.piece.Knight;
@@ -27,7 +28,7 @@ public class Mantis extends BoardArray implements Evaluator
 	
 	public Mantis ()
 	{
-		System.err.println("Evaluating with uk.ac.gla.chessmantis.Mantis");
+		System.err.println("Evaluating with uk.ac.gla.chessmantis.evaluator.Mantis");
 		degran = 0;
 	}
 	private static final int INF = 100000000;

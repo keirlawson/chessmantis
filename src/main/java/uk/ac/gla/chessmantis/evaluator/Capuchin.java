@@ -1,6 +1,5 @@
 package uk.ac.gla.chessmantis.evaluator;
 
-import uk.ac.gla.chessmantis.Mantis;
 import uk.ac.gla.chessmantis.piece.Pawn;
 
 /**

@@ -3,6 +3,7 @@ package uk.ac.gla.chessmantis;
 import uk.ac.gla.chessmantis.analyser.Analyser;
 import uk.ac.gla.chessmantis.analyser.MiniMaxAnalyser;
 import uk.ac.gla.chessmantis.evaluator.Evaluator;
+import uk.ac.gla.chessmantis.evaluator.Mantis;
 
 public class Main {
 
@@ -36,7 +37,7 @@ public class Main {
 
     public static void main(final String[] args)
     {
-        String evaluatorName = "uk.ac.gla.chessmantis.Mantis";
+        String evaluatorName = "uk.ac.gla.chessmantis.evaluator.Mantis";
         String analyserName = "AlphaBetaAnalyser";
         if (args.length > 1) //need atleast two arguments to make sense
         {

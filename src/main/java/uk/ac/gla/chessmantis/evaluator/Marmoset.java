@@ -1,7 +1,5 @@
 package uk.ac.gla.chessmantis.evaluator;
 
-import uk.ac.gla.chessmantis.Mantis;
-
 import java.util.Random;
 
 public class Marmoset extends Mantis implements Evaluator

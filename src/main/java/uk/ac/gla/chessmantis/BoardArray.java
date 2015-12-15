@@ -266,7 +266,6 @@ public class BoardArray implements Board
 	 */
 	public boolean isCheckmate()
 	{
-		// TODO Auto-generated method stub
 	    if(currentMoves.isEmpty() && isInCheck(isPlayerTurn))
 	    {
 	    	// System.err.println("Checkmate: ");
