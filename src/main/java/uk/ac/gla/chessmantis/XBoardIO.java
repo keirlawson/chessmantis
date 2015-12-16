@@ -1,5 +1,7 @@
 package uk.ac.gla.chessmantis;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import uk.ac.gla.chessmantis.event.*;
 
 import java.lang.*;
@@ -9,6 +11,8 @@ import java.util.function.Consumer;
 
 public class XBoardIO implements ChessEventEmitter, ChessEventWriter, Runnable
 {
+	public static final Logger logger = LogManager.getLogger("XBoardIO");
+
 	private Scanner scan;
 	private Formatter form;
 
@@ -179,7 +183,7 @@ public class XBoardIO implements ChessEventEmitter, ChessEventWriter, Runnable
 			String token = commandtokenizer.nextToken();
 			if(token.equals("1-0"))
 			{
-				System.err.println("uk.ac.gla.chessmantis.XBoardIO Win");
+				logger.info("Win");
 				return (new StatusEvent(Status.Win));
 			}
 			else if(token.equals("1/2-1/2"))

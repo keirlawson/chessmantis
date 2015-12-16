@@ -1,5 +1,7 @@
 package uk.ac.gla.chessmantis;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import uk.ac.gla.chessmantis.analyser.Analyser;
 import uk.ac.gla.chessmantis.evaluator.Evaluator;
 
@@ -7,7 +9,9 @@ import java.util.Date;
 import java.util.function.Supplier;
 
 class TimeControl implements Supplier<Moveable> {
-	
+
+	public static final Logger logger = LogManager.getLogger("TimeControl");
+
 	private Evaluator evaluator;
 	private Analyser analyser;
 	private long timeForMove;
@@ -48,20 +52,20 @@ class TimeControl implements Supplier<Moveable> {
 		long analysisStartTime = currentTime();
 		while (timeTakenSoFar(startTime) < timeForMove) {
 			if (analyser.isDone()) {
-				System.err.printf("Evaluator finished, taking approximately %d milliseconds\n", (currentTime() - analysisStartTime));
+				logger.info("Evaluator finished, taking approximately %d milliseconds\n", (currentTime() - analysisStartTime));
 				bestMove = analyser.get();
-				System.err.printf("Suggested move is from %d to %d\n",bestMove.getFromPosition(),bestMove.getToPosition());
+				logger.info("Suggested move is from %d to %d\n",bestMove.getFromPosition(),bestMove.getToPosition());
 				if ( (2 * timeTakenSoFar(startTime)) > timeForMove ) {//If the time taken so far is more than the time left, dont bother to execute another analyser
-					System.err.println("Probably wont have time left to run another analyser, breaking");
+					logger.info("Probably wont have time left to run another analyser, breaking");
 					break;
 				}
 				currentDepth++;
 				if ((maxDepth != 0) && (currentDepth == maxDepth))
 				{
-					System.err.println("Reached maximum depth, breaking");
+					logger.info("Reached maximum depth, breaking");
 					break;
 				}
-				System.err.printf("Evaluating to %d ply\n",currentDepth);
+				logger.info("Evaluating to %d ply\n",currentDepth);
 				analyserThread = setupAnalyser(currentDepth);
 				analysisStartTime = currentTime();
 			}
@@ -73,12 +77,12 @@ class TimeControl implements Supplier<Moveable> {
 		{
 			//This really takes too long, need to work out if it would be quicker to check at each node - KL
 			analyser.setCancel(true);
-			System.err.println("Canceled most recent search due to running out of time");
+			logger.info("Canceled most recent search due to running out of time");
 			try {
 				analyserThread.join();
 			} catch (InterruptedException e) {;}
 		}
-		System.err.println("Finished evaluation");
+		logger.info("Finished evaluation");
 		return bestMove;
 	}
 

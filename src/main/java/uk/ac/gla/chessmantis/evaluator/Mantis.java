@@ -1,5 +1,7 @@
 package uk.ac.gla.chessmantis.evaluator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import uk.ac.gla.chessmantis.BoardArray;
 import uk.ac.gla.chessmantis.evaluator.Evaluator;
 import uk.ac.gla.chessmantis.piece.Bishop;
@@ -16,6 +18,9 @@ import java.lang.Math;
 
 public class Mantis extends BoardArray implements Evaluator
 {
+
+	public static final Logger logger = LogManager.getLogger("Mantis");
+
 	/**
 	 * modifier
 	 * @author TT
@@ -28,7 +33,7 @@ public class Mantis extends BoardArray implements Evaluator
 	
 	public Mantis ()
 	{
-		System.err.println("Evaluating with uk.ac.gla.chessmantis.evaluator.Mantis");
+		logger.info("Evaluating with Mantis");
 		degran = 0;
 	}
 	private static final int INF = 100000000;

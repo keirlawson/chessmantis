@@ -1,11 +1,15 @@
 package uk.ac.gla.chessmantis;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import uk.ac.gla.chessmantis.analyser.Analyser;
 import uk.ac.gla.chessmantis.analyser.MiniMaxAnalyser;
 import uk.ac.gla.chessmantis.evaluator.Evaluator;
 import uk.ac.gla.chessmantis.evaluator.Mantis;
 
 public class Main {
+
+    public static final Logger logger = LogManager.getLogger("Main");
 
     private static <T>  T loadInstance(final String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         final Class clazz = Class.forName(className);
@@ -20,13 +24,13 @@ public class Main {
         try {
             evaluator = loadInstance(evaluatorName);
         } catch (Exception e) {
-            System.err.println("Unable to load evaluator " + evaluatorName + ", loading default instead");
+            logger.warn("Unable to load evaluator " + evaluatorName + ", loading default instead");
             evaluator = new Mantis();
         }
         try {
             analyser = loadInstance(analyserName);
         } catch (Exception e) {
-            System.err.println("Unable to load analyser " + analyserName + ", loading default instead");
+            logger.warn("Unable to load analyser " + analyserName + ", loading default instead");
             analyser = new MiniMaxAnalyser();
         }
 

@@ -1,5 +1,7 @@
 package uk.ac.gla.chessmantis.analyser;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import uk.ac.gla.chessmantis.DebugWriter;
 import uk.ac.gla.chessmantis.Moveable;
 import uk.ac.gla.chessmantis.ChessEventWriter;
@@ -14,8 +16,10 @@ import java.util.*;
  * @version 1.0
  */
 
-public class AlphaBetaAnalyser implements Analyser
-{
+public class AlphaBetaAnalyser implements Analyser {
+
+	public static final Logger logger = LogManager.getLogger("AlphaBetaAnalyser");
+
 	private int cutoffdepth;
 
 	private Evaluator eval;
@@ -70,7 +74,7 @@ public class AlphaBetaAnalyser implements Analyser
         //Based on wikipedia psuedocode
 	int miniMax(Evaluator evaluator, int depth, int alpha, int beta) throws InterruptedException{
 		if (canceled) {
-			System.err.println("Got a cancel, let's get out of here!");
+			logger.debug("Got a cancel, let's get out of here!");
 			throw (new InterruptedException());//Break out here...
 		}
 		List<Moveable> legalmoves = evaluator.generateLegalMoves();

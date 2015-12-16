@@ -1,5 +1,7 @@
 package uk.ac.gla.chessmantis;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import uk.ac.gla.chessmantis.analyser.Analyser;
 import uk.ac.gla.chessmantis.evaluator.Evaluator;
 import uk.ac.gla.chessmantis.event.*;
@@ -9,6 +11,9 @@ import java.util.concurrent.*;
 
 public class Game
 {
+
+	public static final Logger logger = LogManager.getLogger("Game");
+
 	private ChessEventWriter eventWriter;
 	private Evaluator evaluator;
 
@@ -39,7 +44,7 @@ public class Game
 
 			long difference = (new Date()).getTime() - currentMoveStartTime;
 			gameTimeRemaining = (gameTimeRemaining - difference) + timeinc;
-			System.err.printf("that move took roughly %d seconds, we now have roughly %d seconds left\n",difference/1000, gameTimeRemaining /1000);
+			logger.info("that move took roughly %d seconds, we now have roughly %d seconds left\n",difference/1000, gameTimeRemaining /1000);
 
 			evaluator.makeMove(moveable);
 
@@ -90,7 +95,7 @@ public class Game
 		// its the computers turn to make a move now
 		// Start the timer
 		currentMoveStartTime = (new Date()).getTime();
-		System.err.println("Executing new time control thread");
+		logger.info("Executing new time control thread");
 		//Dont know why this works... but it does (seems to be a problem with the reference) - KL
 		timeControl.setEvaluator(evaluator);
 		timeControl.setTimeForMove(gameTimeRemaining / gameMovesRemaining);
@@ -109,7 +114,7 @@ public class Game
 		if (evaluator.makeMove(me.getMove()))
 		{
 			
-			System.err.println("Game.java: Move event received");
+			logger.debug("Game: Move event received");
 			// Legal
 			// 	Check the state of the new board - isCheckmate, isStalemate etc
 			if(evaluator.isCheckmate())
@@ -135,7 +140,7 @@ public class Game
 		else
 		{
 			// Illegal move
-			System.err.println("Game.java: The move was illegal");
+			logger.debug("Game: The move was illegal");
 			eventWriter.write(new IllegalMoveEvent(me.getMove()));
 		}
 		
@@ -154,7 +159,7 @@ public class Game
 			case OfferedDraw:
 				break;
 			case Draw:
-				System.err.println("thinks we drew");
+				logger.info("thinks we drew");
 				break;
 			case Lose:
 				break;

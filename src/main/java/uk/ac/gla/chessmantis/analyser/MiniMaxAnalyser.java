@@ -1,5 +1,7 @@
 package uk.ac.gla.chessmantis.analyser;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import uk.ac.gla.chessmantis.DebugWriter;
 import uk.ac.gla.chessmantis.Moveable;
 import uk.ac.gla.chessmantis.ChessEventWriter;
@@ -16,6 +18,9 @@ import java.util.*;
 
 public class MiniMaxAnalyser implements Analyser
 {
+
+	public static final Logger logger = LogManager.getLogger("MiniMaxAnalyser");
+
 	private int cutoffdepth;
 
 	private Moveable finalmove;
@@ -93,7 +98,7 @@ public class MiniMaxAnalyser implements Analyser
         //Based on wikipedia psuedocode
 	int miniMax(Evaluator evaluator, int depth) throws InterruptedException {
 		if (canceled) {
-			System.err.println("Got a cancel, let's get out of here!");
+			logger.debug("Got a cancel, let's get out of here!");
 			throw (new InterruptedException());//Break out here...
 		}
 		int alpha, beta;

@@ -3,6 +3,8 @@ package uk.ac.gla.chessmantis; /**
  *
 */
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import uk.ac.gla.chessmantis.piece.*;
 
 import java.util.*;
@@ -10,7 +12,10 @@ import java.util.*;
 
 public class BoardArray implements Board
 {
-    private static final int MAXSQUARES = 128; 
+
+	public static final Logger logger = LogManager.getLogger("BoardArray");
+
+	private static final int MAXSQUARES = 128;
     protected Piece[] cb;
     public static final boolean WHITE = true;
     public static final boolean BLACK = false;
@@ -105,12 +110,12 @@ public class BoardArray implements Board
 	{
 		cb = new Piece[MAXSQUARES];
 		setup = setup.replaceAll("/", "");
+
 		// Get the last character and cut it off the string
 		Character p = setup.charAt(0);
 		setup = setup.substring(1, setup.length());
-		// System.err.println("Dealing with character: " + p);
-		// System.err.println("setup string looks like this: " + setup);
-		System.err.println("Got Here");
+		logger.debug("Setting up board");
+
 		// For each square on the board
 		for (int i=112; i > -1; i=i-16)
 		{
@@ -142,11 +147,11 @@ public class BoardArray implements Board
 						// rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 						case 'r':
 							cb[j] = new Rook(BLACK);
-							System.err.println(j + " is Black uk.ac.gla.chessmantis.piece.Rook");
+							System.err.println(j + " is black rook");
 							break;
 						case 'n':
 							cb[j] = new Knight(BLACK);
-							System.err.println(j + " is Black uk.ac.gla.chessmantis.piece.Knight");
+							System.err.println(j + " is black knight");
 							break;
 						case 'b':
 							cb[j] = new Bishop(BLACK);
@@ -154,11 +159,11 @@ public class BoardArray implements Board
 							break;
 						case 'q':
 							cb[j] = new Queen(BLACK);
-							System.err.println(j + " is Black uk.ac.gla.chessmantis.piece.Queen");
+							System.err.println(j + " is black queen");
 							break;
 						case 'k':
 							cb[j] = new King(BLACK);
-							System.err.println(j + " is Black uk.ac.gla.chessmantis.piece.King");
+							System.err.println(j + " is black uk.ac.gla.chessmantis.piece.King");
 							break;
 						case 'p':
 							cb[j] = new Pawn(BLACK);
@@ -335,8 +340,8 @@ public class BoardArray implements Board
 			if (posf > 0)
 			{
 				// System.err.println("isInCheck: Got here 2");
-				// uk.ac.gla.chessmantis.Move the piece in posf to post
-				System.err.println("post: " + post + " posf: " + posf);
+				// Move the piece in posf to post
+				logger.debug("post: " + post + " posf: " + posf);
 				cb[post] = cb[posf];
 				cb[posf] = null;
 				
@@ -633,7 +638,7 @@ public class BoardArray implements Board
 		
 		if (cb[posf] == null) // DG Test if fields valid for move
 		{
-			System.err.println("makeMove: cb[posf] empty! " + posf);
+			logger.debug("makeMove: cb[posf] empty! " + posf);
 			System.exit(1);
 		}
 		
@@ -778,11 +783,11 @@ public class BoardArray implements Board
 		{
 			if (cb[post]==null) // DG Test block added to reveal null errors
 			{
-				System.err.println("ReverseMove: cb[post] empty! " + post);
+				logger.debug("ReverseMove: cb[post] empty! " + post);
 				if (cb[posf]==null)
-					System.err.println("ReverseMove: cb[posf] empty! " + posf);
+					logger.debug("ReverseMove: cb[posf] empty! " + posf);
 				else
-					System.err.println("ReverseMove: cb[posf]: " + cb[posf].toString());
+					logger.debug("ReverseMove: cb[posf]: " + cb[posf].toString());
 			}					// DG End Test block
 			
 			cb[posf] = cb[post];
@@ -796,11 +801,10 @@ public class BoardArray implements Board
 			cb[post]=null;
 		}
 		if (cb[posf] == null){
-			System.err.printf("reverse move! err: %d from: %d (%d) to: %d (%d) capture: %b promotion: %b\n" 
+			logger.warn("reverse move! err: %d from: %d (%d) to: %d (%d) capture: %b promotion: %b\n"
 				+ (m.isPromotion()?"Promotion figure: "+m.getPromotionFigure().toString():"")
 				+ (m.isCapture()?"Capture figure: "+m.getCapturedFigure().toString():""),
 				err, m.getFromPosition(), posf, m.getToPosition(), post, m.isCapture(), m.isPromotion());
-			System.err.println("");
 			printBoard();
 		}
 		
@@ -914,7 +918,7 @@ public class BoardArray implements Board
 	{
 		for (Moveable m : lm)
 		{
-			System.err.printf("Legal uk.ac.gla.chessmantis.Move: %d %d\n",
+			System.err.printf("Legal move: %d %d\n",
 					m.getFromPosition(), m.getToPosition(), XBUtils.moveToString(m));
 		}
 	}
