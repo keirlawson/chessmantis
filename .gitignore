@@ -2,3 +2,5 @@
 target
 *.iml
 xboard.debug
+.project
+.settings/
