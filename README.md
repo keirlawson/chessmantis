@@ -9,7 +9,7 @@ An xboard-compatible Java-based chess engine developed for a group project for t
 To run, `mvn package` then simply set xboard's `-fcp` argument to point at Chess Mantis:
 
 ```bash
-xboard -fcp "java -jar target/chess-mantis-1.0-SNAPSHOT.jar"
+xboard -fcp "java -jar target/chess-mantis-1.0-SNAPSHOT-jar-with-dependencies.jar"
 ```
 
 ## Original authors
